@@ -14,7 +14,7 @@ The solution is scalable, cost-efficient, and production-ready using only manage
 flowchart LR
 
 subgraph ING["1) Ingest (Upload → Start OCR)"]
-direction BT
+direction TB
 U[User] --> S3["S3 Bucket: uploads/"]
 S3 --> L1["Lambda: document-ingest-handler"]
 L1 -->|"Put item (status=UPLOADED)"| DDB1["DynamoDB: DocumentMetadata"]
@@ -23,7 +23,7 @@ L1 --> CW1["CloudWatch Logs"]
 end
 
 subgraph ASYNC["2) Async OCR (Poll complete)"]
-direction BT
+direction TB
 EB["EventBridge Scheduler"] --> L2["Lambda: textract-poller"]
 L2 -->|"Check job status"| TX2["Amazon Textract OCR"]
 L2 -->|"Update item (status=PROCESSED + extractedTextPreview)"| DDB2["DynamoDB: DocumentMetadata"]
@@ -31,7 +31,7 @@ L2 --> CW2["CloudWatch Logs"]
 end
 
 subgraph API["3) Query API (Secured REST)"]
-direction BT
+direction TB
 C[Client] --> APIGW["API Gateway REST API"]
 APIGW -->|"GET /documents"| L3["Lambda: get-documents"]
 APIGW -->|"GET /documents/{documentId}"| L4["Lambda: get-document-by-id"]
