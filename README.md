@@ -10,7 +10,7 @@ The solution is scalable, cost-efficient, and production-ready using only manage
 ## Architecture Diagram
 
 ```mermaid
-%%{init: {"flowchart": {"nodeSpacing": 40, "rankSpacing": 40, "curve": "basis"}, "themeVariables": {"fontSize": "14px"}} }%%
+%%{init: {"flowchart": {"nodeSpacing": 50, "rankSpacing": 50, "curve": "basis"}, "themeVariables": {"fontSize": "16px"}} }%%
 flowchart LR
 
 subgraph ING["1) Ingest (Upload → Start OCR)"]
@@ -40,6 +40,10 @@ L4 --> DDB3
 L3 --> CW3["CloudWatch Logs"]
 L4 --> CW3
 end
+
+%% Hidden links to force the 1 -> 2 -> 3 order
+ING ~~~ ASYNC
+ASYNC ~~~ API
 
 
 ```
