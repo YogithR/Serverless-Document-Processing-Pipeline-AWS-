@@ -10,10 +10,6 @@ The solution is scalable, cost-efficient, and production-ready using only manage
 ## Architecture Diagram
 
 ```mermaid
-To fix the size and order, I have changed the main direction back to TB (Top-to-Bottom) to prevent the diagram from being too wide, and I have reordered the code blocks so that Section 1 appears first, followed by Section 2, and then Section 3.
-
-Code snippet
-
 flowchart TB
 
 subgraph ING["1) Ingest (Upload -> Start OCR)"]
@@ -43,7 +39,6 @@ L4 --> DDB3
 L3 --> CW3["CloudWatch Logs"]
 L4 --> CW3
 end
-
 ```
 
 ---
