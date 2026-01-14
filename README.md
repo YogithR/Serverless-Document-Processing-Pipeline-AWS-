@@ -10,36 +10,37 @@ The solution is scalable, cost-efficient, and production-ready using only manage
 ## Architecture Diagram
 
 ```mermaid
-flowchart TD
+flowchart LR
 
-    %% 1) INGEST
-    subgraph Ingest ["1) Ingest"]
-        U((User)) --> S3[S3 Bucket upload]
-        S3 --> L1[Lambda document ingest]
+    %% Vertical logic for the main processes
+    subgraph Processes
+        direction TB
+        subgraph Ingest ["1) Ingest"]
+            U((User)) --> S3[S3 Bucket upload]
+            S3 --> L1[Lambda: Ingest]
+        end
+
+        subgraph Async ["2) Async OCR"]
+            EB[EventBridge] --> L2[Lambda: Poller]
+        end
+
+        subgraph API ["3) Query API"]
+            C((Client)) --> APIGW[API Gateway]
+            APIGW --> L3[Lambda: Get Docs]
+            APIGW --> L4[Lambda: Get ID]
+        end
     end
 
-    %% 2) ASYNC
-    subgraph Async ["2) Async OCR"]
-        EB[EventBridge Scheduler] --> L2[Lambda textract poller]
+    %% Shared Services moved to the right to stop line crossing
+    subgraph Shared ["Shared Services"]
+        direction TB
+        TX[Amazon Textract OCR]
+        DDB[(DynamoDB Metadata)]
+        CW[CloudWatch Logs]
     end
 
-    %% 3) API
-    subgraph API ["3) Query API"]
-        C((Client)) --> APIGW[API Gateway]
-        APIGW --> L3[Lambda get documents]
-        APIGW --> L4[Lambda get document by id]
-    end
-
-    %% Shared Resources positioned to balance the lines
-    TX[Amazon Textract OCR]
-    DDB[(DynamoDB Metadata)]
-    CW[CloudWatch Logs]
-
-    %% Main Logic Connections
-    L1 --> TX
-    L2 --> TX
-    
-    %% Data Connections (Grouped to prevent crossing)
+    %% Clear, non-crossing horizontal connections
+    L1 & L2 --> TX
     L1 & L2 & L3 & L4 --> DDB
     L1 & L2 & L3 & L4 --> CW
 ```
