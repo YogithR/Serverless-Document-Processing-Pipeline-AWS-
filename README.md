@@ -11,37 +11,51 @@ The solution is scalable, cost-efficient, and production-ready using only manage
 
 ```mermaid
 flowchart LR
+    %% User & Upload
     User[User]
     S3[S3 Bucket uploads]
+
+    %% Processing
     L1[Lambda document ingest]
     TX[Amazon Textract OCR]
     EB[EventBridge Scheduler]
     L2[Lambda textract poller]
+
+    %% Storage
     DDB[DynamoDB DocumentMetadata]
+
+    %% API Layer
     APIGW[API Gateway REST API secured]
     L3[Lambda get documents]
     L4[Lambda get document by id]
+
+    %% Observability
     CW[CloudWatch Logs]
 
+    %% Upload Flow
     User --> S3
     S3 --> L1
     L1 --> DDB
     L1 --> TX
 
+    %% OCR Processing
     EB --> L2
     L2 --> TX
     L2 --> DDB
 
+    %% API Query Flow
     APIGW --> L3
     APIGW --> L4
     L3 --> DDB
     L4 --> DDB
     APIGW --> User
 
+    %% Logging
     L1 --> CW
     L2 --> CW
     L3 --> CW
     L4 --> CW
+
 
 
 
