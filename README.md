@@ -10,39 +10,36 @@ The solution is scalable, cost-efficient, and production-ready using only manage
 ## Architecture Diagram
 
 ```mermaid
-flowchart LR
+flowchart TB;
 
-    %% Vertical logic for the main processes
-    subgraph Processes
-        direction TB
-        subgraph Ingest ["1) Ingest"]
-            U((User)) --> S3[S3 Bucket upload]
-            S3 --> L1[Lambda: Ingest]
-        end
+subgraph ING["1) Ingest (Upload -> Start OCR)"];
+direction LR;
+U[User] --> S3["S3 Bucket: uploads/"];
+S3 --> L1["Lambda: document-ingest-handler"];
+L1 -->|"Put item (status=UPLOADED)"| DDB1["DynamoDB: DocumentMetadata"];
+L1 -->|"Start Textract job"| TX1["Amazon Textract OCR"];
+L1 --> CW1["CloudWatch Logs"];
+end;
 
-        subgraph Async ["2) Async OCR"]
-            EB[EventBridge] --> L2[Lambda: Poller]
-        end
+subgraph ASYNC["2) Async OCR (Poll until complete)"];
+direction LR;
+EB["EventBridge Scheduler"] --> L2["Lambda: textract-poller"];
+L2 -->|"Check job status"| TX2["Amazon Textract OCR"];
+L2 -->|"Update item (status=PROCESSED + extractedTextPreview)"| DDB2["DynamoDB: DocumentMetadata"];
+L2 --> CW2["CloudWatch Logs"];
+end;
 
-        subgraph API ["3) Query API"]
-            C((Client)) --> APIGW[API Gateway]
-            APIGW --> L3[Lambda: Get Docs]
-            APIGW --> L4[Lambda: Get ID]
-        end
-    end
+subgraph API["3) Query API (Secured REST)"];
+direction LR;
+C[Client] --> APIGW["API Gateway REST API"];
+APIGW -->|"GET /documents"| L3["Lambda: get-documents"];
+APIGW -->|"GET /documents/{documentId}"| L4["Lambda: get-document-by-id"];
+L3 --> DDB3["DynamoDB: DocumentMetadata"];
+L4 --> DDB3;
+L3 --> CW3["CloudWatch Logs"];
+L4 --> CW3;
+end;
 
-    %% Shared Services moved to the right to stop line crossing
-    subgraph Shared ["Shared Services"]
-        direction TB
-        TX[Amazon Textract OCR]
-        DDB[(DynamoDB Metadata)]
-        CW[CloudWatch Logs]
-    end
-
-    %% Clear, non-crossing horizontal connections
-    L1 & L2 --> TX
-    L1 & L2 & L3 & L4 --> DDB
-    L1 & L2 & L3 & L4 --> CW
 ```
 
 ---
