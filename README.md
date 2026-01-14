@@ -10,35 +10,34 @@ The solution is scalable, cost-efficient, and production-ready using only manage
 ## Architecture Diagram
 
 ```mermaid
-%%{init: {"flowchart": {"nodeSpacing": 25, "rankSpacing": 25, "curve": "basis"}, "themeVariables": {"fontSize": "12px"}} }%%
-flowchart TB
+flowchart LR
 
-subgraph S1["1) Ingest (Upload → Start OCR)"]
-direction LR
-U["User"] --> S3["S3 (uploads/)"]
+subgraph ING["1) Ingest (Upload -> Start OCR)"]
+direction TB
+U[User] --> S3["S3 Bucket: uploads/"]
 S3 --> L1["Lambda: document-ingest-handler"]
-L1 -->|"Put item"| DDB["DynamoDB: DocumentMetadata"]
-L1 -->|"Start job"| TX["Amazon Textract (Async OCR)"]
-L1 --> CW["CloudWatch Logs"]
+L1 --> DDB1["DynamoDB: DocumentMetadata"]
+L1 --> TX1["Amazon Textract OCR"]
+L1 --> CW1["CloudWatch Logs"]
 end
 
-subgraph S2["2) Async OCR (Poll until complete)"]
-direction LR
+subgraph ASYNC["2) Async OCR (Poll until complete)"]
+direction TB
 EB["EventBridge Scheduler"] --> L2["Lambda: textract-poller"]
-L2 -->|"Check status"| TX
-L2 -->|"Update item"| DDB
-L2 --> CW
+L2 --> TX2["Amazon Textract OCR"]
+L2 --> DDB2["DynamoDB: DocumentMetadata"]
+L2 --> CW2["CloudWatch Logs"]
 end
 
-subgraph S3API["3) Query API (Secured REST)"]
-direction LR
-C["Client"] --> APIGW["API Gateway (API Key)"]
-APIGW -->|"GET /documents"| L3["Lambda: get-documents"]
-APIGW -->|"GET /documents/{documentId}"| L4["Lambda: get-document-by-id"]
-L3 --> DDB
-L4 --> DDB
-L3 --> CW
-L4 --> CW
+subgraph API["3) Query API (Secured REST)"]
+direction TB
+C[Client] --> APIGW["API Gateway REST API"]
+APIGW --> L3["Lambda: get-documents"]
+APIGW --> L4["Lambda: get-document-by-id"]
+L3 --> DDB3["DynamoDB: DocumentMetadata"]
+L4 --> DDB3
+L3 --> CW3["CloudWatch Logs"]
+L4 --> CW3
 end
 
 ```
