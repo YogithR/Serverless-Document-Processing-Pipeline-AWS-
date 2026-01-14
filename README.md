@@ -10,49 +10,44 @@ The solution is scalable, cost-efficient, and production-ready using only manage
 ## Architecture Diagram
 
 ```mermaid
-flowchart TB
+flowchart TD
 
-%% =========================
-%% 1) INGEST
-%% =========================
-subgraph ING["1) Ingest (Upload → Start OCR)"]
-direction LR
-U[User] --> S3[S3 Bucket uploads]
-S3 --> L1[Lambda document ingest]
-L1 --> TX[Amazon Textract OCR]
-L1 --> DDB1[(DynamoDB DocumentMetadata)]
-L1 --> CW1[CloudWatch Logs]
-end
+    %% 1) INGEST SECTION
+    subgraph Ingest ["1) Ingest (Upload → Start OCR)"]
+        U((User)) --> S3[S3 Bucket upload]
+        S3 --> L1[Lambda document ingest]
+    end
 
-%% =========================
-%% 2) ASYNC OCR
-%% =========================
-subgraph ASYNC["2) Async OCR (Poll until complete)"]
-direction LR
-EB[EventBridge Scheduler] --> L2[Lambda textract poller]
-L2 --> TX2[Amazon Textract OCR]
-L2 --> DDB2[(DynamoDB DocumentMetadata)]
-L2 --> CW2[CloudWatch Logs]
-end
+    %% 2) ASYNC SECTION
+    subgraph Async ["2) Async OCR (Poll until complete)"]
+        EB[EventBridge Scheduler] --> L2[Lambda textract poller]
+    end
 
-%% =========================
-%% 3) API
-%% =========================
-subgraph API["3) Query API (Secured REST)"]
-direction LR
-C[Client] --> APIGW[API Gateway REST API]
-APIGW --> L3[Lambda get documents]
-APIGW --> L4[Lambda get document by id]
-L3 --> DDB3[(DynamoDB DocumentMetadata)]
-L4 --> DDB3
-L3 --> CW3[CloudWatch Logs]
-L4 --> CW3
-end
+    %% 3) API SECTION
+    subgraph API ["3) Query API (Secured REST)"]
+        C((Client)) --> APIGW[API Gateway REST API]
+        APIGW --> L3[Lambda get documents]
+        APIGW --> L4[Lambda get document by id]
+    end
 
-%% =========================
-%% 4) NOTES (optional)
-%% =========================
-NOTE["Note: DynamoDB and CloudWatch are the SAME services.\nDuplicated here only to keep the diagram readable."]
+    %% SHARED SERVICES
+    TX[Amazon Textract OCR]
+    DDB[(DynamoDB DocumentMetadata)]
+    CW[CloudWatch Logs]
+
+    %% CONNECTIONS
+    L1 --> TX
+    L1 --> DDB
+    L1 --> CW
+
+    L2 --> TX
+    L2 --> DDB
+    L2 --> CW
+
+    L3 --> DDB
+    L3 --> CW
+    L4 --> DDB
+    L4 --> CW
 
 
 
