@@ -12,41 +12,36 @@ The solution is scalable, cost-efficient, and production-ready using only manage
 ```mermaid
 flowchart TD
 
-    %% Layer 1: Entry Points
+    %% 1) INGEST
     subgraph Ingest ["1) Ingest"]
         U((User)) --> S3[S3 Bucket upload]
         S3 --> L1[Lambda document ingest]
     end
 
+    %% 2) ASYNC
     subgraph Async ["2) Async OCR"]
         EB[EventBridge Scheduler] --> L2[Lambda textract poller]
     end
 
+    %% 3) API
     subgraph API ["3) Query API"]
-        C((Client)) --> APIGW[API Gateway REST API]
+        C((Client)) --> APIGW[API Gateway]
         APIGW --> L3[Lambda get documents]
         APIGW --> L4[Lambda get document by id]
     end
 
-    %% Layer 2: Shared Resources (Middle/Bottom)
+    %% Shared Resources positioned to balance the lines
     TX[Amazon Textract OCR]
-    DDB[(DynamoDB DocumentMetadata)]
+    DDB[(DynamoDB Metadata)]
     CW[CloudWatch Logs]
 
-    %% Cleaned Connections
+    %% Main Logic Connections
     L1 --> TX
-    L1 --> DDB
-    L1 --> CW
-
     L2 --> TX
-    L2 --> DDB
-    L2 --> CW
-
-    L3 --> DDB
-    L3 --> CW
-    L4 --> DDB
-    L4 --> CW
-
+    
+    %% Data Connections (Grouped to prevent crossing)
+    L1 & L2 & L3 & L4 --> DDB
+    L1 & L2 & L3 & L4 --> CW
 ```
 
 ---
