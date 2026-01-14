@@ -12,6 +12,9 @@ The solution is scalable, cost-efficient, and production-ready using only manage
 ```mermaid
 %%{init: {"flowchart": {"nodeSpacing": 40, "rankSpacing": 40, "curve": "basis"}, "themeVariables": {"fontSize": "14px"}} }%%
 flowchart LR
+> The diagram is organized left-to-right by pipeline stage:
+> 1) Ingest → 2) Async OCR → 3) Query API.
+> GitHub may render sections vertically depending on screen size.
 
 subgraph ING["1) Ingest (Upload → Start OCR)"]
 direction TB
