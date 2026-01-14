@@ -18,7 +18,7 @@ flowchart LR
     EB[EventBridge Scheduler]
     L2[Lambda - textract-poller]
     DDB[DynamoDB - DocumentMetadata]
-    APIGW[API Gateway - REST API (API Key Secured)]
+    APIGW[API Gateway - REST API - API Key Secured]
     L3[Lambda - get-documents]
     L4[Lambda - get-document-by-id]
     CW[CloudWatch Logs]
@@ -42,6 +42,7 @@ flowchart LR
     L2 --> CW
     L3 --> CW
     L4 --> CW
+
 
 ```
 
