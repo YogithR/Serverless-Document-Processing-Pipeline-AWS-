@@ -10,30 +10,30 @@ The solution is scalable, cost-efficient, and production-ready using only manage
 ## Architecture Diagram
 
 ```mermaid
-flowchart TB
+flowchart LR
 
 subgraph ING["1) Ingest (Upload -> Start OCR)"]
-direction LR
+direction TB
 U[User] --> S3["S3 Bucket: uploads/"]
 S3 --> L1["Lambda: document-ingest-handler"]
-L1 -->|"Put item (status=UPLOADED)"| DDB1["DynamoDB: DocumentMetadata"]
-L1 -->|"Start Textract job"| TX1["Amazon Textract OCR"]
+L1 -->|"Put item"| DDB1["DynamoDB: DocumentMetadata"]
+L1 -->|"Start job"| TX1["Amazon Textract OCR"]
 L1 --> CW1["CloudWatch Logs"]
 end
 
 subgraph ASYNC["2) Async OCR (Poll until complete)"]
-direction LR
+direction TB
 EB["EventBridge Scheduler"] --> L2["Lambda: textract-poller"]
-L2 -->|"Check job status"| TX2["Amazon Textract OCR"]
-L2 -->|"Update item (status=PROCESSED + extractedTextPreview)"| DDB2["DynamoDB: DocumentMetadata"]
+L2 -->|"Check status"| TX2["Amazon Textract OCR"]
+L2 -->|"Update item"| DDB2["DynamoDB: DocumentMetadata"]
 L2 --> CW2["CloudWatch Logs"]
 end
 
 subgraph API["3) Query API (Secured REST)"]
-direction LR
+direction TB
 C[Client] --> APIGW["API Gateway REST API"]
-APIGW -->|"GET /documents"| L3["Lambda: get-documents"]
-APIGW -->|"GET /documents/{documentId}"| L4["Lambda: get-document-by-id"]
+APIGW -->|"GET"| L3["Lambda: get-documents"]
+APIGW -->|"GET"| L4["Lambda: get-document-by-id"]
 L3 --> DDB3["DynamoDB: DocumentMetadata"]
 L4 --> DDB3
 L3 --> CW3["CloudWatch Logs"]
