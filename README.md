@@ -10,53 +10,50 @@ The solution is scalable, cost-efficient, and production-ready using only manage
 ## Architecture Diagram
 
 ```mermaid
-flowchart LR
+flowchart TB
 
 %% =========================
-%% 1) INGEST (S3 -> Lambda -> Textract/DynamoDB)
+%% 1) INGEST
 %% =========================
 subgraph ING["1) Ingest (Upload → Start OCR)"]
 direction LR
 U[User] --> S3[S3 Bucket uploads]
 S3 --> L1[Lambda document ingest]
-L1 --> DDB[(DynamoDB DocumentMetadata)]
 L1 --> TX[Amazon Textract OCR]
+L1 --> DDB1[(DynamoDB DocumentMetadata)]
+L1 --> CW1[CloudWatch Logs]
 end
 
 %% =========================
-%% 2) ASYNC OCR (EventBridge -> Poller -> DynamoDB)
+%% 2) ASYNC OCR
 %% =========================
 subgraph ASYNC["2) Async OCR (Poll until complete)"]
 direction LR
 EB[EventBridge Scheduler] --> L2[Lambda textract poller]
-L2 --> TX
-L2 --> DDB
+L2 --> TX2[Amazon Textract OCR]
+L2 --> DDB2[(DynamoDB DocumentMetadata)]
+L2 --> CW2[CloudWatch Logs]
 end
 
 %% =========================
-%% 3) API (API Gateway -> Lambdas -> DynamoDB)
+%% 3) API
 %% =========================
 subgraph API["3) Query API (Secured REST)"]
 direction LR
 C[Client] --> APIGW[API Gateway REST API]
 APIGW --> L3[Lambda get documents]
 APIGW --> L4[Lambda get document by id]
-L3 --> DDB
-L4 --> DDB
+L3 --> DDB3[(DynamoDB DocumentMetadata)]
+L4 --> DDB3
+L3 --> CW3[CloudWatch Logs]
+L4 --> CW3
 end
 
 %% =========================
-%% 4) LOGS (All Lambdas -> CloudWatch)
+%% 4) NOTES (optional)
 %% =========================
-subgraph OBS["4) Observability"]
-direction TB
-CW[CloudWatch Logs]
-end
+NOTE["Note: DynamoDB and CloudWatch are the SAME services.\nDuplicated here only to keep the diagram readable."]
 
-L1 --> CW
-L2 --> CW
-L3 --> CW
-L4 --> CW
 
 
 
