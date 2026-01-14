@@ -10,44 +10,42 @@ The solution is scalable, cost-efficient, and production-ready using only manage
 ## Architecture Diagram
 
 ```mermaid
-flowchart TB
+flowchart TD
 
-%% =========================
-%% 1) INGEST (Upload → Start OCR)
-%% =========================
-subgraph ING["1) Ingest (Upload → Start OCR)"]
-direction LR
-U[User] --> S3[S3 Bucket (uploads/)]
-S3 --> L1[Lambda: document-ingest-handler]
-L1 -->|Put item status=UPLOADED| DDB1[(DynamoDB: DocumentMetadata)]
-L1 -->|Start Textract job| TX1[Amazon Textract OCR]
-L1 --> CW1[CloudWatch Logs]
-end
+    %% Layer 1: Entry Points
+    subgraph Ingest ["1) Ingest"]
+        U((User)) --> S3[S3 Bucket upload]
+        S3 --> L1[Lambda document ingest]
+    end
 
-%% =========================
-%% 2) ASYNC OCR (Poll until complete)
-%% =========================
-subgraph ASYNC["2) Async OCR (Poll until complete)"]
-direction LR
-EB[EventBridge Scheduler] --> L2[Lambda: textract-poller]
-L2 -->|Get job status| TX2[Amazon Textract OCR]
-L2 -->|Update item status=PROCESSED + extractedTextPreview| DDB2[(DynamoDB: DocumentMetadata)]
-L2 --> CW2[CloudWatch Logs]
-end
+    subgraph Async ["2) Async OCR"]
+        EB[EventBridge Scheduler] --> L2[Lambda textract poller]
+    end
 
-%% =========================
-%% 3) QUERY API (Secured REST)
-%% =========================
-subgraph API["3) Query API (Secured REST)"]
-direction LR
-C[Client] --> APIGW[API Gateway REST API]
-APIGW -->|GET /documents| L3[Lambda: get-documents]
-APIGW -->|GET /documents/{documentId}| L4[Lambda: get-document-by-id]
-L3 --> DDB3[(DynamoDB: DocumentMetadata)]
-L4 --> DDB3
-L3 --> CW3[CloudWatch Logs]
-L4 --> CW3[CloudWatch Logs]
-end
+    subgraph API ["3) Query API"]
+        C((Client)) --> APIGW[API Gateway REST API]
+        APIGW --> L3[Lambda get documents]
+        APIGW --> L4[Lambda get document by id]
+    end
+
+    %% Layer 2: Shared Resources (Middle/Bottom)
+    TX[Amazon Textract OCR]
+    DDB[(DynamoDB DocumentMetadata)]
+    CW[CloudWatch Logs]
+
+    %% Cleaned Connections
+    L1 --> TX
+    L1 --> DDB
+    L1 --> CW
+
+    L2 --> TX
+    L2 --> DDB
+    L2 --> CW
+
+    L3 --> DDB
+    L3 --> CW
+    L4 --> DDB
+    L4 --> CW
 
 ```
 
