@@ -11,7 +11,7 @@ The solution is scalable, cost-efficient, and production-ready using only manage
 
 ```mermaid
 %%{init: {"flowchart": {"nodeSpacing": 40, "rankSpacing": 40, "curve": "basis"}, "themeVariables": {"fontSize": "14px"}} }%%
-flowchart LR
+flowchart RL
 
 subgraph API["3) Query API (Secured REST)"]
 direction TB
