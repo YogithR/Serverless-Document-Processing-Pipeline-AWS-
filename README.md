@@ -12,36 +12,37 @@ The solution is scalable, cost-efficient, and production-ready using only manage
 ```mermaid
 flowchart LR
     User[User]
-    S3[S3 Bucket - uploads]
-    L1[Lambda - document-ingest-handler]
-    TX[Amazon Textract - Async OCR]
+    S3[S3 Bucket uploads]
+    L1[Lambda document ingest]
+    TX[Amazon Textract OCR]
     EB[EventBridge Scheduler]
-    L2[Lambda - textract-poller]
-    DDB[DynamoDB - DocumentMetadata]
-    APIGW[API Gateway - REST API - API Key Secured]
-    L3[Lambda - get-documents]
-    L4[Lambda - get-document-by-id]
+    L2[Lambda textract poller]
+    DDB[DynamoDB DocumentMetadata]
+    APIGW[API Gateway REST API secured]
+    L3[Lambda get documents]
+    L4[Lambda get document by id]
     CW[CloudWatch Logs]
 
-    User -->|Upload PDF| S3
-    S3 -->|ObjectCreated Event| L1
-    L1 -->|PutItem status=UPLOADED| DDB
-    L1 -->|Start OCR Job| TX
+    User --> S3
+    S3 --> L1
+    L1 --> DDB
+    L1 --> TX
 
-    EB -->|Scheduled Invoke| L2
-    L2 -->|Check Job Status| TX
-    L2 -->|UpdateItem status=PROCESSED| DDB
+    EB --> L2
+    L2 --> TX
+    L2 --> DDB
 
-    APIGW -->|GET /documents| L3
-    APIGW -->|GET /documents/{documentId}| L4
+    APIGW --> L3
+    APIGW --> L4
     L3 --> DDB
     L4 --> DDB
-    APIGW -->|JSON Response| User
+    APIGW --> User
 
     L1 --> CW
     L2 --> CW
     L3 --> CW
     L4 --> CW
+
 
 
 ```
