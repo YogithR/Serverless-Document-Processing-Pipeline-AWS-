@@ -10,10 +10,14 @@ The solution is scalable, cost-efficient, and production-ready using only manage
 ## Architecture Diagram
 
 ```mermaid
-flowchart LR
+To fix the size and order, I have changed the main direction back to TB (Top-to-Bottom) to prevent the diagram from being too wide, and I have reordered the code blocks so that Section 1 appears first, followed by Section 2, and then Section 3.
+
+Code snippet
+
+flowchart TB
 
 subgraph ING["1) Ingest (Upload -> Start OCR)"]
-direction TB
+direction LR
 U[User] --> S3["S3 Bucket: uploads/"]
 S3 --> L1["Lambda: document-ingest-handler"]
 L1 -->|"Put item (status=UPLOADED)"| DDB1["DynamoDB: DocumentMetadata"]
@@ -22,7 +26,7 @@ L1 --> CW1["CloudWatch Logs"]
 end
 
 subgraph ASYNC["2) Async OCR (Poll until complete)"]
-direction TB
+direction LR
 EB["EventBridge Scheduler"] --> L2["Lambda: textract-poller"]
 L2 -->|"Check job status"| TX2["Amazon Textract OCR"]
 L2 -->|"Update item (status=PROCESSED + extractedTextPreview)"| DDB2["DynamoDB: DocumentMetadata"]
@@ -30,7 +34,7 @@ L2 --> CW2["CloudWatch Logs"]
 end
 
 subgraph API["3) Query API (Secured REST)"]
-direction TB
+direction LR
 C[Client] --> APIGW["API Gateway REST API"]
 APIGW -->|"GET /documents"| L3["Lambda: get-documents"]
 APIGW -->|"GET /documents/{documentId}"| L4["Lambda: get-document-by-id"]
