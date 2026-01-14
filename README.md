@@ -12,15 +12,15 @@ The solution is scalable, cost-efficient, and production-ready using only manage
 ```mermaid
 flowchart LR
     User[User]
-    S3[S3 Bucket<br/>uploads/]
-    L1[Lambda<br/>document-ingest-handler]
-    TX[Amazon Textract<br/>Async OCR]
+    S3[S3 Bucket - uploads]
+    L1[Lambda - document-ingest-handler]
+    TX[Amazon Textract - Async OCR]
     EB[EventBridge Scheduler]
-    L2[Lambda<br/>textract-poller]
-    DDB[DynamoDB<br/>DocumentMetadata]
-    APIGW[API Gateway<br/>REST API<br/>(API Key Secured)]
-    L3[Lambda<br/>get-documents]
-    L4[Lambda<br/>get-document-by-id]
+    L2[Lambda - textract-poller]
+    DDB[DynamoDB - DocumentMetadata]
+    APIGW[API Gateway - REST API (API Key Secured)]
+    L3[Lambda - get-documents]
+    L4[Lambda - get-document-by-id]
     CW[CloudWatch Logs]
 
     User -->|Upload PDF| S3
@@ -42,6 +42,7 @@ flowchart LR
     L2 --> CW
     L3 --> CW
     L4 --> CW
+
 ```
 
 ---
