@@ -22,7 +22,7 @@ L1 -->|"Start Textract job"| TX1["Amazon Textract OCR"]
 L1 --> CW1["CloudWatch Logs"]
 end
 
-subgraph ASYNC["2) Async OCR (Poll until complete)"]
+subgraph ASYNC["2) Async OCR (Poll complete)"]
 direction TB
 EB["EventBridge Scheduler"] --> L2["Lambda: textract-poller"]
 L2 -->|"Check job status"| TX2["Amazon Textract OCR"]
