@@ -17,13 +17,15 @@ The solution is scalable and production-ready using only managed AWS services (n
 %%{init: {"flowchart": {"nodeSpacing": 40, "rankSpacing": 40, "curve": "basis"}, "themeVariables": {"fontSize": "14px"}} }%%
 flowchart LR;
 
-subgraph ING["1) Ingest (Upload -> Start OCR)"];
+subgraph API["3) Query API (Secured REST)"];
 direction TB;
-U[User] --> S3["S3 Bucket: uploads/"];
-S3 --> L1["Lambda: document-ingest-handler"];
-L1 -->|"Put item status=UPLOADED"| DDB1["DynamoDB: DocumentMetadata"];
-L1 -->|"Start Textract job"| TX1["Amazon Textract OCR"];
-L1 --> CW1["CloudWatch Logs"];
+C[Client] --> APIGW["API Gateway REST API"];
+APIGW -->|"GET list documents"| L3["Lambda: get-documents"];
+APIGW -->|"GET document by id"| L4["Lambda: get-document-by-id"];
+L3 --> DDB3["DynamoDB: DocumentMetadata"];
+L4 --> DDB3;
+L3 --> CW3["CloudWatch Logs"];
+L4 --> CW3;
 end;
 
 subgraph ASYNC["2) Async OCR (Poll until complete)"];
@@ -34,15 +36,13 @@ L2 -->|"Update item status=PROCESSED + extractedTextPreview"| DDB2["DynamoDB: Do
 L2 --> CW2["CloudWatch Logs"];
 end;
 
-subgraph API["3) Query API (Secured REST)"];
+subgraph ING["1) Ingest (Upload -> Start OCR)"];
 direction TB;
-C[Client] --> APIGW["API Gateway REST API"];
-APIGW -->|"GET list documents"| L3["Lambda: get-documents"];
-APIGW -->|"GET document by id"| L4["Lambda: get-document-by-id"];
-L3 --> DDB3["DynamoDB: DocumentMetadata"];
-L4 --> DDB3;
-L3 --> CW3["CloudWatch Logs"];
-L4 --> CW3;
+U[User] --> S3["S3 Bucket: uploads/"];
+S3 --> L1["Lambda: document-ingest-handler"];
+L1 -->|"Put item status=UPLOADED"| DDB1["DynamoDB: DocumentMetadata"];
+L1 -->|"Start Textract job"| TX1["Amazon Textract OCR"];
+L1 --> CW1["CloudWatch Logs"];
 end;
 ```
 
