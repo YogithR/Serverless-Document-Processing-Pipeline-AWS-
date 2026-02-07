@@ -163,12 +163,6 @@ Enabled:
 
 ---
 
-## Resume Summary (Copy-Ready)
-**Serverless Document Processing Pipeline (AWS)**  
-- Built an event-driven serverless pipeline where PDF uploads to S3 trigger Lambda ingestion and asynchronous Textract OCR.  
-- Stored document metadata and extracted text in DynamoDB with lifecycle tracking (UPLOADED to PROCESSED).  
-- Exposed secure REST APIs via API Gateway using API keys and usage plans for access control.  
-- Enabled CloudWatch logs and API Gateway access logging to monitor latency and troubleshoot errors.
 
 ---
 
