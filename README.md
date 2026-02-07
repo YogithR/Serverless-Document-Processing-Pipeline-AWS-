@@ -153,14 +153,3 @@ Enabled:
 
 ---
 
-## Screenshots to Include (Portfolio / Submission)
-1. **S3**: `uploads/` folder showing the PDF
-2. **Lambda**: functions list
-3. **DynamoDB**: item showing `status = PROCESSED`
-4. **API Gateway**: stage `prod` and resources
-5. **Terminal**: curl output showing **HTTP 200 OK**
-6. **CloudWatch**: API access log showing status **200**
-
----
-
-
